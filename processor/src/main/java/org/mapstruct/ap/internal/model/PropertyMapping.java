@@ -657,6 +657,13 @@ public class PropertyMapping extends ModelElement {
             if ( resultNullability == null ) {
                 return sourceNullability;
             }
+            if ( assignment.getSourceParameterNullability() == NullabilityResolver.Nullability.NULLABLE
+                && resultNullability == NullabilityResolver.Nullability.UNKNOWN ) {
+                // An unannotated reused-method result is not explicitly nullable. Preserve the
+                // pre-JSpecify assignment behavior when that helper accepts null; an explicit
+                // @Nullable result still remains potentially nullable.
+                return NullabilityResolver.Nullability.NON_NULL;
+            }
             if ( sourceNullability != NullabilityResolver.Nullability.NON_NULL
                 && assignment.getSourceParameterNullability() == NullabilityResolver.Nullability.NON_NULL
                 && resultNullability == NullabilityResolver.Nullability.NON_NULL ) {
