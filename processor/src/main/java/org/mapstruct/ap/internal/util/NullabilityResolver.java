@@ -169,8 +169,8 @@ public class NullabilityResolver {
      * <p>
      * A reused mapping method can add a contract on either side of the assignment. The input
      * contract is considered before the target contract because a non-null parameter must be
-     * protected at the call site, while a nullable parameter with a non-null result can safely
-     * receive the source value directly.
+     * protected at the call site, while a nullable parameter whose result is not explicitly
+     * nullable can safely receive the source value directly.
      *
      * @param sourceNullability the nullability of the source (getter return type / parameter)
      * @param targetNullability the nullability of the target (setter parameter / field)
@@ -194,8 +194,12 @@ public class NullabilityResolver {
             // A nullable source must not be passed to a method with a non-null parameter
             return Boolean.TRUE;
         }
-        if ( parameterNullability == Nullability.NULLABLE && resultNullability == Nullability.NON_NULL ) {
-            // The method accepts null and guarantees a non-null result, so it must be invoked directly
+        if ( parameterNullability == Nullability.NULLABLE
+            && resultNullability != null
+            && resultNullability != Nullability.NULLABLE ) {
+            // The method accepts null and does not declare a nullable result. UNKNOWN preserves the
+            // pre-JSpecify behavior for unannotated return types; only an explicit @Nullable result
+            // makes the assignment potentially nullable.
             return Boolean.FALSE;
         }
         if ( targetNullability == Nullability.NON_NULL ) {
